@@ -38,9 +38,10 @@ user <- NULL
 pw <- NULL 
 port <- NULL 
 server <- "server_name"  #server or host 
+dialect <- "sql server"  #the target sql dialect
 
 #make sure below is properly updated
-connectionDetails <- createConnectionDetails(dbms = "sql server", server = server)
+connectionDetails <- createConnectionDetails(dbms = dialect, server = server)
 
 cdmDatabaseSchema <- "omop4.dbo"
 resultsDatabaseSchema <- "omop4_cohort_results.dbo"  #This script doesn't require a results database
@@ -65,7 +66,7 @@ SQL <- paste("SELECT DISTINCT a.condition_concept_id, c.concept_name, count(dist
              "ORDER BY (count(distinct a.person_id)) desc;", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 conditions_with_ptcounts <- querySql(connection, sql)
 
 #trimming the list to only retain the conditions with at least 1000 patients
@@ -88,7 +89,7 @@ SQL <- paste("SELECT distinct a.person_id, a.month_of_birth, a.day_of_birth ",
              "WHERE a.year_of_birth>=1900 AND a.year_of_birth<=2000;", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 pts_w_condition <- querySql(connection, sql)
 
 
@@ -128,7 +129,7 @@ while (i<=dim(conditions_with_ptcounts)[1]){
                ";", sep="")
 
   sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-  sql <- translateSql(sql, targetDialect = 'sql server')$sql
+  sql <- translateSql(sql, targetDialect = dialect)$sql
   pts_w_condition <- querySql(connection, sql)
   
   birthmonth_pts_w_condition = merge(birthmonths_allpts, pts_w_condition, by='person_id')
