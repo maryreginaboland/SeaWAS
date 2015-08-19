@@ -38,8 +38,9 @@ user <- NULL
 pw <- NULL
 port <- NULL
 server <- "server_name"  #server or host
+dialect <- "sql server"  #the target sql dialect
 
-connectionDetails <- createConnectionDetails(dbms = "sql server", server = server)
+connectionDetails <- createConnectionDetails(dbms = dialect, server = server)
 
 cdmDatabaseSchema <- "omop4.dbo"                     #this is the OMOP CDM formatted instance with read access
 resultsDatabaseSchema <- "omop4_cohort_results.dbo"  #this is the local instance with write access
@@ -77,7 +78,7 @@ SQL <- paste("select distinct c.condition_concept_id, c.num_pts_w_condition ",
              "group by (condition_concept_id)) c ",
              "where c.num_pts_w_condition>=1000;", sep="")
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 theo_conditions <- querySql(connection, sql)
 theo_conditions <- queryColnamesToLowercase(theo_conditions)
 
@@ -90,7 +91,7 @@ SQL <- paste("select distinct a.person_id, a.year_of_birth, a.month_of_birth, a.
              "join @cdmDatabaseSchema.CONDITION_OCCURRENCE b on a.person_id=b.person_id ",
              "where a.year_of_birth>=1900 and a.year_of_birth<=2000;", sep="")
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 birthmonths_allpts <- querySql(connection, sql)
 birthmonths_allpts <- queryColnamesToLowercase(birthmonths_allpts)
 
@@ -105,7 +106,7 @@ while(i <= length(theo_conditions$condition_concept_id)) {
                "from @cdmDatabaseSchema.CONDITION_OCCURRENCE ",
                "where condition_concept_id='", theo_conditions$condition_concept_id[i], "';", sep = "")
   sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-  sql <- translateSql(sql, targetDialect = 'sql server')$sql
+  sql <- translateSql(sql, targetDialect = dialect)$sql
   query_1 <- querySql(connection, sql)
   query_1 <- queryColnamesToLowercase(query_1)
   
@@ -120,7 +121,7 @@ while(i <= length(theo_conditions$condition_concept_id)) {
                              "condition_source_value varchar(50) DEFAULT NULL ",
                              ");", sep="")
   sql <- renderSql(create_table_query, resultsDatabaseSchema=resultsDatabaseSchema)$sql
-  sql <- translateSql(sql, targetDialect = 'sql server')$sql
+  sql <- translateSql(sql, targetDialect = dialect)$sql
   executeSql(connection, sql)
   
   #Below is a simulated dbWriteTable
@@ -134,7 +135,7 @@ while(i <= length(theo_conditions$condition_concept_id)) {
       sql <- paste(sql, "(", paste(query_2$person_id[j], query_2$year_of_birth[j], query_2$month_of_birth[j], query_2$day_of_birth[j], query_2$condition_concept_id[j], query_2$condition_source_value[j], sep=","), "), ", sep="")  
     }
     sql <- renderSql(sql, resultsDatabaseSchema = resultsDatabaseSchema)$sql
-    sql <- translateSql(sql, targetDialect = 'sql server')$sql
+    sql <- translateSql(sql, targetDialect = dialect)$sql
     sql <- gsub(', $', '', sql)
     executeSql(connection, sql, progressBar=F, reportOverallTime=F)
   }
@@ -142,7 +143,7 @@ while(i <= length(theo_conditions$condition_concept_id)) {
   
   SQL <- c("select distinct person_id, year_of_birth, month_of_birth, day_of_birth from @resultsDatabaseSchema.SeaWAS_automatedquery;")
   sql <- renderSql(SQL, resultsDatabaseSchema=resultsDatabaseSchema)$sql
-  sql <- translateSql(sql, targetDialect = 'sql server')$sql
+  sql <- translateSql(sql, targetDialect = dialect)$sql
   final_result <- querySql(connection, sql)
   final_result <- queryColnamesToLowercase(final_result)
   
@@ -185,7 +186,7 @@ while(i <= length(theo_conditions$condition_concept_id)) {
   #need to clear SeaWAS_automatedquery at the end of each iteration
   SQL <- c("drop table @resultsDatabaseSchema.SeaWAS_automatedquery;") 
   sql <- renderSql(SQL, resultsDatabaseSchema=resultsDatabaseSchema)$sql
-  sql <- translateSql(sql, targetDialect = 'sql server')$sql
+  sql <- translateSql(sql, targetDialect = dialect)$sql
   executeSql(connection, sql)
   
   cat("iteration", i, "condition", theo_conditions$condition_concept_id[i], "\n")
