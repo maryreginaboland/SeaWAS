@@ -42,9 +42,10 @@ user <- NULL
 pw <- NULL 
 port <- NULL 
 server <- "server_name"  #server or host 
+dialect <- "sql server"  #the target sql dialect
 
 #make sure below is properly updated
-connectionDetails <- createConnectionDetails(dbms = "sql server", server = server)
+connectionDetails <- createConnectionDetails(dbms = dialect, server = server)
 
 cdmDatabaseSchema <- "omop4.dbo"
 resultsDatabaseSchema <- "omop4_cohort_results.dbo"  #The results database is not used in this script
@@ -69,7 +70,7 @@ SQL <- paste("SELECT DISTINCT gender_concept_id AS concept_id, count(distinct pe
       "GROUP BY (gender_concept_id);", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 sex_data <- querySql(connection, sql)
 
 
@@ -80,7 +81,7 @@ SQL <- paste("select distinct ethnicity_concept_id as concept_id, count(distinct
              "group by (ethnicity_concept_id);", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 ethnicity_data <- querySql(connection, sql)
 
 
@@ -91,7 +92,7 @@ SQL <- paste("select distinct race_concept_id as concept_id, count(distinct pers
              "group by (race_concept_id);", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 race_data <- querySql(connection, sql)
 
 
@@ -131,7 +132,7 @@ SQL <- paste("select distinct b.person_id, b.year_of_birth, a.year_of_service ",
   "where b.year_of_birth>=1900 and b.year_of_birth<=2000;", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 age_data <- querySql(connection, sql)
 
 
@@ -151,7 +152,7 @@ SQL <- paste("select a.person_id, count(a.condition_concept_id) as total_codes_p
             "group by (a.person_id);", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 total_OMOP_codes_per_pt <- querySql(connection, sql)
 
 
@@ -171,7 +172,7 @@ SQL <- paste("select a.person_id, count(distinct a.condition_concept_id) as dist
              "group by (a.person_id);", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 distinct_OMOP_codes_per_pt <- querySql(connection, sql)
 
 
@@ -192,7 +193,7 @@ SQL <- paste("select distinct c.person_id, count(distinct c.year_of_service) as 
              "group by (c.person_id);", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 followup_data <- querySql(connection, sql)
 
 
@@ -228,7 +229,7 @@ SQL <- paste("select distinct a.condition_concept_id, count(distinct a.person_id
       "order by (count(distinct a.person_id)) desc;", sep="")
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
-sql <- translateSql(sql, targetDialect = 'sql server')$sql
+sql <- translateSql(sql, targetDialect = dialect)$sql
 top100_conditions <- querySql(connection, sql)
 
 #trimming the list to only retain the top 100
