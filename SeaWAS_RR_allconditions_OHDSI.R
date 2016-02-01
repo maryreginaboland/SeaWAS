@@ -90,11 +90,11 @@ SQL <- paste("SELECT distinct a.person_id, a.month_of_birth, a.day_of_birth ",
 
 sql <- renderSql(SQL, cdmDatabaseSchema=cdmDatabaseSchema)$sql
 sql <- translateSql(sql, targetDialect = dialect)$sql
-pts_w_condition <- querySql(connection, sql)
+birthmonths_allpts <- querySql(connection, sql)
 
 
-rs = dbSendQuery(cumc, query)
-birthmonths_allpts = fetch(rs, n=-1)  
+#rs = dbSendQuery(cumc, query)
+#birthmonths_allpts = fetch(rs, n=-1)  
 
 
 daily_index_forweeks=seq(from=1,to=366, by=7)
